@@ -126,6 +126,14 @@ class SegmentTree {
             applyLazy(tree[idx], tree[idx*2],tree[idx*2+1]);
             // tree[idx] = operation(tree[idx*2],tree[idx*2+1]);
         }
+        void collector(int idx, int start,int end, int l,int r,vector<int> & output) {
+            propagate(idx,start,end);
+            if (start>end || l>r || end<l || start>r) return;
+            if (start==end) output.push_back(tree[idx]);
+            int mid = start + (end-start)/2;
+            collector(2*idx,start,mid,l,r,output);
+            collector(2*idx+1,mid+1,end,l,r,output);
+        }
 
     public:
         SegmentTree(vector<int> &arr, function<int(int,int)> opr, int neutral,function<void(int&,int,int)>opr2) {
@@ -151,13 +159,113 @@ class SegmentTree {
         int query(int l,int r){
             return query(1,0,n-1,l,r);
         }
+        void fillChart(int l,int r,vector<int> & output) {
+            output.clear();
+            collector(1,0,n-1,l,r,output);
+        }
 
+};
+struct TreapNode {
+    int start,end;
+    int priority;
+    TreapNode *left, *right;
+    TreapNode(int s,int e) : start(s), end(e) , priority(rand()), left(nullptr), right(nullptr) {}
+};
+
+class Treap {
+    private:
+        TreapNode* root;
+        TreapNode* rotateRight(TreapNode* y) {
+            TreapNode* nw = y->left;
+            y->left = nw->right;
+            nw->right = y;
+            return nw;
+        }
+        TreapNode* rotateLeft(TreapNode* y) {
+            TreapNode* nw = y->right;
+            y->right = nw->left;
+            nw->left = y;
+            return nw;
+        }
+
+        TreapNode* insert(TreapNode* node, int start,int end) {
+            if (!node) return new TreapNode(start,end);
+            if (start < node->start) {
+                node->left = insert(node->left, start,end);
+                if (node->left->priority > node->priority) node = rotateRight(node);
+            }else {
+                node->right = insert(node->right, start,end) ;
+                if (node->right->priority > node->priority) {
+                    node = rotateLeft(node);
+                }
+            }
+            return node;
+        }
+
+        TreapNode* deleteNode(TreapNode* node, int start,int end) {
+            if (!node) return nullptr;
+            if (start<node->start) {
+                node->left = deleteNode(node->left,start,end);
+            }else if(start>node->start) {
+                node->right = deleteNode(node->right, start,end);
+            }else if (node->end==end) {
+                if (!node->left) {
+                    TreapNode* temp = node->right;
+                    delete node;
+                    return temp;
+                }else if (!node->right) {
+                    TreapNode* temp = node->left;
+                    delete node;
+                    return temp;
+                }else {
+                    if (node->left->priority > node->right->priority) {
+                        node= rotateRight(node);
+                        node->right = deleteNode(node->right, start,end);
+                    }else {
+                        node = rotateLeft(node);
+                        node->left = deleteNode(node->left, start,end);
+                    }
+                }
+            }
+            return node;
+        }
+
+        bool queryOverlap(TreapNode* node, int start,int end) {
+            if (!node) return false;
+            if (node->start <=end && node->end >=start) return true;
+            if (start<node->start) return queryOverlap(node->left,start,end);
+            else return queryOverlap(node->right,start,end);
+        }
+        void inorder(TreapNode* node) {
+            if (!node) return;
+            inorder(node->left);
+            cout << "[" << node->start << " , " << node->end << "]" ;
+            inorder(node->right);
+        }
+        
+    public:
+        Treap(): root(nullptr) {}
+        void insert(int start,int end) {
+            root = insert(root,start,end);
+        }
+        void deleteInterval(int start,int end) {
+            root = deleteNode(root,start,end);
+        }
+        bool queryOverlap(int start,int end) {
+            return queryOverlap(root,start,end);
+        }
+        void printTreap() {
+            inorder(root);
+            cout << endl;
+        }
+        
 };
 
 class Room {
     private:
     TimeFormat *timeConverter;
     SegmentTree *SegTree;
+    Treap* Trp;
     public:
     Room() {
         vector<int> arr(24*31*12, 0);
@@ -172,13 +280,11 @@ class Room {
 
     }
     void prettyPrint(vector<int> values) {
-        if (values.size() != 24) {
-            cout << "Error: Expected 24 values for printing." << endl;
-            return;
-        }
-    
         const int valuesPerRow = 8; // Number of values per row
         const int boxWidth = 5;     // Width of each box
+    
+        int totalValues = values.size();
+        int rows = (totalValues + valuesPerRow - 1) / valuesPerRow; // Calculate total rows needed
     
         // Print top border
         for (int i = 0; i < valuesPerRow; i++) {
@@ -187,7 +293,7 @@ class Room {
         cout << "+" << endl;
     
         // Print values row by row
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < totalValues; i++) {
             if (i % valuesPerRow == 0 && i != 0) {
                 cout << endl;
                 // Print bottom border for the previous row
@@ -196,10 +302,10 @@ class Room {
                 }
                 cout << "+" << endl;
             }
-            
+    
             // Print value inside the box
             if (i % valuesPerRow == 0) {
-                cout << "|" ; // Start of a new row
+                cout << "|"; // Start of a new row
             }
             cout << " " << setw(3) << values[i] << " |"; // Print value with padding
         }
@@ -211,60 +317,57 @@ class Room {
         }
         cout << "+" << endl;
     }
-    void show(string a) {
-        //to show a day 24 hrs booking
+    
+    void show(string a,string b) {
+        
         vector<int> ids;
-        int time = timeConverter->DTimeToInt(a);
-        for (int i=0;i<24;i++) {
-            ids.push_back(SegTree->query(time, time));
-            time+= 1;
-        }
-        //pretty print these 24 values
+        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
+        SegTree->fillChart(x,y-1,ids);
+        
         this->prettyPrint(ids);
     }
+
     void book(string a,string b,int id = 1) {
         
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
-        //make x to y as 1
-        y-=1;
-        // cout << "booking" << timeConverter->intToDTime(x) << " " << timeConverter->intToDTime(y) << endl;
+
+        y--;
+        
         cout << x << " " << y << endl;
         int occupied = SegTree->query(x,y);
         cout << occupied << endl;
         if (occupied) {
+
             cout << "slot is already occupied" << endl;
+
         }else {
             SegTree->update(x,y,id);
-
-            cout << "booked" << endl;
+            // Trp->insert(x,y);
+            
         }
-        cout << SegTree->query(0,23) << endl;
-        this->show("00" + a.substr(2));
+       
+        
 
     }
     void del(string a,string b,int id = 1) {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
-        //make x to y as 1
+        
         y--;
         int occupied = SegTree->query(x,y);
 
         if (occupied==id) {
+            // Trp->deleteInterval(x,y);
             SegTree->update(x,y,0);
-            cout << "deleted slot" << endl;
+            
         }else {
             cout << "it was empty or you do not have permission" << endl;
         }
-        this->show("00" + a.substr(2));
-        cout << SegTree->query(0,23) << endl;
+        
 
     }
-    void timepass() {
-        SegTree->update(0,5,3);
-        cout << SegTree->query(0,10) << endl;
-         SegTree->update(0,10,0) ;
-        cout << SegTree->query(0,10) << endl;
+    
 
-    }
+    
 };
 
 int main() {
@@ -273,7 +376,7 @@ int main() {
     M1->book("000000","090000",5);
     M1->del("000000","040000",5);
     M1->del("040000" , "070000",4);
-    // M1->timepass();
+    
 
     return 0;
 }
