@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+
 class Node {
     public:
         int a,b;
@@ -30,7 +31,7 @@ class Treap {
             return temp;
         }
 
-        Node*insert(Node* node, int a,int b) {
+        Node* insert(Node* node, int a,int b) {
             if (!node) return new Node(a,b);
             if (a<node->a) {
                 node->left = insert(node->left, a,b);
@@ -89,16 +90,36 @@ class Treap {
             return (temp==nullptr? node:temp);
         }
         Node* searchBetween(Node* node, int a,int b) {
-            if (!node) return nullptr;
+            if (node==nullptr) return nullptr;
             if (node->a <= a && node->b >=b) return node;
             if (node->a > b) return searchBetween(node->left,a,b);
             if (node->b<a) return searchBetween(node->right,a,b);
             cout << "problem" << endl;
             return nullptr;
         }
+        void getOverlap(Node* node, int a,int b,vector<pair<int,int>> & output) {
+            if (node==nullptr) return;
+            if (node->a > b || node->b < a) return;
+            //there is overlap
+            getOverlap(node->left,a,b,output);
+            output.push_back({node->a,node->b});
+            getOverlap(node->right, a,b,output);
+        }
     public:
         Treap(): root(nullptr) {}
-        
+        void suggestLeft(int a) {
+            Node* temp = searchLeft(this->root,a);
+            
+            cout << temp->a << " " << temp->b << endl;
+        }
+        void suggestRight(int b) {
+            Node* temp = searchRight(this->root, b) ;
+            cout << temp->a << " " << temp->b << endl;
+        }
+        void suggestDuring(int a,int b) {
+            Node* temp = searchBetween(this->root ,a,b);
+            cout << temp->a << " " << temp->b << endl;
+        }
         void del(Node* node) {
             // simply delete node from root
             root = del(root,node->a,node->b);
@@ -140,5 +161,11 @@ class Treap {
             }else {
                 cout << "wrong qeury" << endl;
             }
+        }
+        vector<pair<int,int>> getFreeIntervals(int a,int b) {
+            //return all intervals overlap with a and b
+            vector<pair<int,int>> answer;
+            getOverlap(this->root,a,b,answer);
+            return answer;
         }
 };
