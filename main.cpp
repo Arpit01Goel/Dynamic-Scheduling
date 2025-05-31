@@ -126,10 +126,10 @@ class SegmentTree {
             applyLazy(tree[idx], tree[idx*2],tree[idx*2+1]);
             // tree[idx] = operation(tree[idx*2],tree[idx*2+1]);
         }
-        void collector(int idx, int start,int end, int l,int r,vector<int> & output) {
-            propagate(idx,start,end);
+        void collector(int idx, int start,int end, int l,int r,vector<tuple<int,int,int>> & output) {
             if (start>end || l>r || end<l || start>r) return;
-            if (start==end) output.push_back(tree[idx]);
+            propagate(idx,start,end);
+            if (start==end) output.push_back({start,end,tree[idx]});
             int mid = start + (end-start)/2;
             collector(2*idx,start,mid,l,r,output);
             collector(2*idx+1,mid+1,end,l,r,output);
@@ -159,7 +159,7 @@ class SegmentTree {
         int query(int l,int r){
             return query(1,0,n-1,l,r);
         }
-        void fillChart(int l,int r,vector<int> & output) {
+        void fillChart(int l,int r,vector<tuple<int,int,int>> & output) {
             output.clear();
             collector(1,0,n-1,l,r,output);
         }
@@ -344,6 +344,7 @@ class Room {
     Treap* Trp;
     public:
     Room() {
+        timeConverter = new TimeFormat();
         vector<int> arr(24*31*12, 0);
         function<int(int,int)> fn1 = [] (int a,int b) {
             return a|b;
@@ -357,107 +358,56 @@ class Room {
         Trp->insert(0,24*31*12-1);
 
     }
-    void prettyPrint(vector<int> values) {
-        const int valuesPerRow = 8; // Number of values per row
-        const int boxWidth = 5;     // Width of each box
-    
-        int totalValues = values.size();
-        int rows = (totalValues + valuesPerRow - 1) / valuesPerRow; // Calculate total rows needed
-    
-        // Print top border
-        for (int i = 0; i < valuesPerRow; i++) {
-            cout << "+-----";
-        }
-        cout << "+" << endl;
-    
-        // Print values row by row
-        for (int i = 0; i < totalValues; i++) {
-            if (i % valuesPerRow == 0 && i != 0) {
-                cout << endl;
-                // Print bottom border for the previous row
-                for (int j = 0; j < valuesPerRow; j++) {
-                    cout << "+-----";
-                }
-                cout << "+" << endl;
-            }
-    
-            // Print value inside the box
-            if (i % valuesPerRow == 0) {
-                cout << "|"; // Start of a new row
-            }
-            cout << " " << setw(3) << values[i] << " |"; // Print value with padding
-        }
-    
-        // Print bottom border for the last row
-        cout << endl;
-        for (int i = 0; i < valuesPerRow; i++) {
-            cout << "+-----";
-        }
-        cout << "+" << endl;
-    }
-    
-    void show(string a,string b) {
+    int book(string a,string b,int id = 1) {
         
-        vector<int> ids;
-        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
-        SegTree->fillChart(x,y-1,ids);
-        
-        this->prettyPrint(ids);
-    }
-    bool Available(string a,string b) {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
         y--;
-        return SegTree->query(x,y) == 0;
-    }
-    void book(string a,string b,int id = 1) {
-        
-        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
-
-        y--;
-        
-        cout << x << " " << y << endl;
         int occupied = SegTree->query(x,y);
-        cout << occupied << endl;
+        
         if (occupied) {
-
             cout << "slot is already occupied" << endl;
-
+            return 0;
         }else {
             SegTree->update(x,y,id);
-            Trp->del(x,y);
-            
+            Trp->del(x,y);  
+            return 1;
         }
-       
-        
-
     }
-    void del(string a,string b,int id = 1) {
+    int del(string a,string b,int id = 1) {
+        //0 not available, 1 done, -1 no access
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
-        
         y--;
         int occupied = SegTree->query(x,y);
 
         if (occupied==id) {
             Trp->insert(x,y);
             SegTree->update(x,y,0);
-            
+            return 1;
         }else {
             cout << "it was empty or you do not have permission" << endl;
+            return 0;
         }
         
-
     }
-    void suggest(string a,string b) {
+    bool isAvailabe(string a,string b) {
+        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
+        y--;
+        return (SegTree->query(x,y)==0);
+    }
+    vector<pair<int,int>>  suggest(string a,string b) {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
         y--;
         vector<pair<int,int>> vec = Trp->getFreeIntervals(x,y);
-        for (auto i:vec) {
-            cout << "["<< timeConverter->intToDTime(i.first) << " " << timeConverter->intToDTime(i.second+1) << "]" << endl;
-        }
+        return vec;
+        
+    }    
+    vector<tuple<int,int,int>> listBooking(string a, string b) {
+        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
+        y--;
+        vector<tuple<int,int,int>> answer;
+        SegTree->fillChart(x,y,answer);
+        return answer;
     }
-    
-
-    
 };
 
 int main() {
