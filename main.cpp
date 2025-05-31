@@ -165,101 +165,7 @@ class SegmentTree {
         }
 
 };
-struct TreapNode {
-    int start,end;
-    int priority;
-    TreapNode *left, *right;
-    TreapNode(int s,int e) : start(s), end(e) , priority(rand()), left(nullptr), right(nullptr) {}
-};
 
-class Treap {
-    private:
-        TreapNode* root;
-        TreapNode* rotateRight(TreapNode* y) {
-            TreapNode* nw = y->left;
-            y->left = nw->right;
-            nw->right = y;
-            return nw;
-        }
-        TreapNode* rotateLeft(TreapNode* y) {
-            TreapNode* nw = y->right;
-            y->right = nw->left;
-            nw->left = y;
-            return nw;
-        }
-
-        TreapNode* insert(TreapNode* node, int start,int end) {
-            if (!node) return new TreapNode(start,end);
-            if (start < node->start) {
-                node->left = insert(node->left, start,end);
-                if (node->left->priority > node->priority) node = rotateRight(node);
-            }else {
-                node->right = insert(node->right, start,end) ;
-                if (node->right->priority > node->priority) {
-                    node = rotateLeft(node);
-                }
-            }
-            return node;
-        }
-
-        TreapNode* deleteNode(TreapNode* node, int start,int end) {
-            if (!node) return nullptr;
-            if (start<node->start) {
-                node->left = deleteNode(node->left,start,end);
-            }else if(start>node->start) {
-                node->right = deleteNode(node->right, start,end);
-            }else if (node->end==end) {
-                if (!node->left) {
-                    TreapNode* temp = node->right;
-                    delete node;
-                    return temp;
-                }else if (!node->right) {
-                    TreapNode* temp = node->left;
-                    delete node;
-                    return temp;
-                }else {
-                    if (node->left->priority > node->right->priority) {
-                        node= rotateRight(node);
-                        node->right = deleteNode(node->right, start,end);
-                    }else {
-                        node = rotateLeft(node);
-                        node->left = deleteNode(node->left, start,end);
-                    }
-                }
-            }
-            return node;
-        }
-
-        bool queryOverlap(TreapNode* node, int start,int end) {
-            if (!node) return false;
-            if (node->start <=end && node->end >=start) return true;
-            if (start<node->start) return queryOverlap(node->left,start,end);
-            else return queryOverlap(node->right,start,end);
-        }
-        void inorder(TreapNode* node) {
-            if (!node) return;
-            inorder(node->left);
-            cout << "[" << node->start << " , " << node->end << "]" ;
-            inorder(node->right);
-        }
-        
-    public:
-        Treap(): root(nullptr) {}
-        void insert(int start,int end) {
-            root = insert(root,start,end);
-        }
-        void deleteInterval(int start,int end) {
-            root = deleteNode(root,start,end);
-        }
-        bool queryOverlap(int start,int end) {
-            return queryOverlap(root,start,end);
-        }
-        void printTreap() {
-            inorder(root);
-            cout << endl;
-        }
-        
-};
 
 class Room {
     private:
@@ -277,6 +183,8 @@ class Room {
         };
         int neutralValue = 0;
         SegTree = new SegmentTree(arr,fn1,neutralValue,fn2);
+        Trp = new Treap();
+        Trp->insertInterval(0,24*31*12-1);
 
     }
     void prettyPrint(vector<int> values) {
@@ -326,7 +234,11 @@ class Room {
         
         this->prettyPrint(ids);
     }
-
+    bool Available(string a,string b) {
+        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
+        y--;
+        return SegTree->query(x,y) == 0;
+    }
     void book(string a,string b,int id = 1) {
         
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
@@ -342,7 +254,7 @@ class Room {
 
         }else {
             SegTree->update(x,y,id);
-            // Trp->insert(x,y);
+            Trp->deleteInterval(x,y);
             
         }
        
@@ -356,7 +268,7 @@ class Room {
         int occupied = SegTree->query(x,y);
 
         if (occupied==id) {
-            // Trp->deleteInterval(x,y);
+            Trp->insertInterval(x,y);
             SegTree->update(x,y,0);
             
         }else {
@@ -364,6 +276,14 @@ class Room {
         }
         
 
+    }
+    void suggest(string a,string b) {
+        int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
+        y--;
+        vector<pair<int,int>> vec = Trp->getFreeIntervalsBetween(x,y);
+        for (auto i:vec) {
+            cout << "["<< timeConverter->intToDTime(i.first) << " " << timeConverter->intToDTime(i.second+1) << "]" << endl;
+        }
     }
     
 
@@ -373,9 +293,10 @@ class Room {
 int main() {
     Room *M1 = new Room();
 
-    M1->book("000000","090000",5);
+    M1->book("000000","000100",5);
     M1->del("000000","040000",5);
-    M1->del("040000" , "070000",4);
+    M1->del("040000" , "070000",5);
+    M1->suggest("000000","000100");
     
 
     return 0;
