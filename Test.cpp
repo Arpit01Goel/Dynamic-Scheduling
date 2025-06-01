@@ -27,7 +27,7 @@ TEST_F(RoomTest, ShortBooking) {
 
 }
 TEST_F(RoomTest, LongBooking) {
-    EXPECT_EQ(room->book("00000300", "00000403"), 1); //very long book
+    EXPECT_EQ(room->book("00000000", "23492010"), 1); //very long book
 }
 
 TEST_F(RoomTest, Deleting1) {
@@ -62,7 +62,19 @@ TEST_F(RoomTest, Listing) {
     room->book("01051301", "01071301");
     EXPECT_EQ(room->listBooking("00000000", "23593011").size(), 1);
 }
+TEST_F(RoomTest, Save) {
+    room->book("20000000", "22000000");
+    room->book("22000000", "00000100");
+    room->book("20010100", "22590100");
+    room->book("15000000", "17290000");
+    room->book("00000300", "00000403");
+    room->book("20000000", "00000100");
+    EXPECT_EQ(room->save("dataOutput.txt"),true);
+}
+TEST_F(RoomTest, Load) {
+    EXPECT_EQ(room->load("dataOutput.txt"),true);
 
+}
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

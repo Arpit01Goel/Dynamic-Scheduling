@@ -445,42 +445,53 @@ class Room {
         vector<vector<int>> output, answer;
         SegTree->fillChart(x,y,output);
         if (output.size()==0) return output;
-        int start = output[0][0], last = output[0][1], id = output[0][2];
+        int start = output[0][0], last = output[0][1];
         for (int i=1;i<output.size();i++) {
-            if (last+1 == output[i][0] && id==output[i][2]) {
+            if (last+1 == output[i][0]) {
                 last = output[i][1];continue;
             }
             cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << endl;
             answer.push_back({start,last});
             start = output[i][0];
             last = output[i][1];
-            id= output[i][2];
+            
         }
             cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << endl;
             answer.push_back({start,last});
         return answer;
     }
-    void save(string filename) {
+    bool save(string filename) {
         int x = 0, y = 24*31*12*60;
         y--;
         vector<vector<int>> answer;
+
         SegTree->fillChart(x,y,answer);
         ofstream outFile(filename);
-        if (!outFile.is_open()) {
+        if (!outFile.is_open() || answer.size()==0) {
             cout << "Error: Unable to open file " << filename << endl;
-            return;
+            return 0;
         }
-        for (auto i:answer) {
-            outFile << "book " << timeConverter->intToDTime(i[0])  << " " << timeConverter->intToDTime(i[1]+1) << " " << i[2] << endl;
+        int start = answer[0][0], last = answer[0][1];
+        for (int i=1;i<answer.size();i++) {
+            if (last+1 == answer[i][0]) {
+                last = answer[i][1];
+                continue;
+            }
+            outFile << "book " << timeConverter->intToDTime(start)  << " " << timeConverter->intToDTime(last+1) << endl;
+            start = answer[i][0];
+            last = answer[i][1];
         }
+        outFile << "book " << timeConverter->intToDTime(start)  << " " << timeConverter->intToDTime(last+1) << endl;
+
         outFile.close();
         cout << "Data saved to : " << filename << endl;
+        return 1;
     }
-    void load(string filename) {
+    bool load(string filename) {
         ifstream inFile(filename);
         if (!inFile.is_open()) {
             cout << "Error: Unable to open file " << filename << endl;
-            return;
+            return 0;
         }
         string line;
         while (getline(inFile,line)) {
@@ -522,6 +533,7 @@ class Room {
                 exit(0);
             }
         }
+        return true;
     }
 };
 
@@ -575,5 +587,6 @@ void run() {
     }
 
 }
+
 
 
