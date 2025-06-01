@@ -75,7 +75,7 @@ class Treap {
         }
         Node* searchRight(Node* node,int b) {
             if (!node) return nullptr;
-            if (node->b<b) return nullptr;
+            if (node->b<b) return searchRight(node->right,b);
             if (node->a <= b && b<=node->b) return node;
 
             Node* temp = searchRight(node->left, b);
@@ -83,7 +83,7 @@ class Treap {
         }
         Node* searchLeft(Node* node, int a) {
             if (!node) return nullptr;
-            if (node->a >a) return nullptr;
+            if (node->a >a) return searchLeft(node->left, a);
             if (node->a <=a && node->b >=a) return node;
 
             Node* temp = searchLeft(node->right,a);

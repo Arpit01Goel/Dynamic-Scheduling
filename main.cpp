@@ -204,7 +204,7 @@ class Treap {
         }
 
         Node* insert(Node* node, int a,int b) {
-            if (!node) return new Node(a,b);
+            if (node==nullptr) return new Node(a,b);
             if (a<node->a) {
                 node->left = insert(node->left, a,b);
                 if (node->left->priority > node->priority) node = rotateRight(node);
@@ -246,16 +246,16 @@ class Treap {
             return nullptr;
         }
         Node* searchRight(Node* node,int b) {
-            if (!node) return nullptr;
-            if (node->b<b) return nullptr;
+            if (node==nullptr) return nullptr;
+            if (node->b<b) return searchRight(node->right,b);
             if (node->a <= b && b<=node->b) return node;
 
             Node* temp = searchRight(node->left, b);
             return ( temp==nullptr? node:temp);
         }
         Node* searchLeft(Node* node, int a) {
-            if (!node) return nullptr;
-            if (node->a >a) return nullptr;
+            if (node==nullptr) return nullptr;
+            if (node->a >a) return searchLeft(node->left, a);
             if (node->a <=a && node->b >=a) return node;
 
             Node* temp = searchLeft(node->right,a);
@@ -309,7 +309,7 @@ class Treap {
                 b = right->b;
                 del(right);
             }
-            root = insert(root,a,b);
+            this->root = insert(root,a,b);
         }
         void del(int a,int b) {
 
