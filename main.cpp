@@ -6,7 +6,8 @@ typedef long long ll;
 class TimeFormat {
     public:
         string intToDTime(int num) {
-            
+            int min = num%60;
+            num/=60;
             int hours = num%24;
             num/=24;
             int days = num%31;
@@ -14,19 +15,21 @@ class TimeFormat {
             int month = num;
             
             string answer = (hours<10? "0": "") + to_string(hours) +
+                            (min< 10? "0":"") + to_string(min) +
                             (days<10? "0": "") + to_string(days) + 
                             (month< 10? "0": "") + to_string(month);
             return answer;
         } 
         int DTimeToInt(const string nwtime) {
-            string time = nwtime.substr(4,2) + nwtime.substr(2,2)+ nwtime.substr(0,2);
-            int answer =  24*31*stoi(time.substr(0,2)) 
-                         +24*   stoi(time.substr(2,2)) 
-                         +     stoi(time.substr(4,2));
+            string time = nwtime.substr(6,2) + nwtime.substr(4,2)+ nwtime.substr(0,2)+nwtime.substr(2,2);
+            int answer =  24*31*60*stoi(time.substr(0,2)) 
+                         +24*60*   stoi(time.substr(2,2)) 
+                         + 60*    stoi(time.substr(4,2))
+                         + stoi(time.substr(6,2));
             return answer;
         }
         string print(string str) {
-            cout << str.substr(0,2) + ":00 " + str.substr(2,2) + "/" + str.substr(4,2);
+            cout << str.substr(0,2) + ":"+ str.substr(2,2) + "  "  + str.substr(4,2) + "/" + str.substr(6,2);
             return "";
         }
         string print(int num) {
@@ -106,7 +109,7 @@ class SegmentTree {
                     applyLazy(lazy[2*idx+1], lazy[idx],1);
                 }
                 toProp[idx] = 0;
-                lazy[idx] = 0;
+                lazy[idx] = neutralValue;
         
         }
 
@@ -137,6 +140,10 @@ class SegmentTree {
             propagate(idx,start,end);
             if (tree[idx]==0) return;
             if (start==end) {output.push_back({start,end,tree[idx]}); return;}
+            if (tree[idx]%(end-start+1)==0) {
+                output.push_back({start,end,tree[idx]/(end-start+1)});
+                return;
+            }
             int mid = start + (end-start)/2;
             collector(2*idx,start,mid,l,r,output);
             collector(2*idx+1,mid+1,end,l,r,output);
@@ -350,17 +357,17 @@ class Room {
     public:
     Room() {
         timeConverter = new TimeFormat();
-        vector<int> arr(24*31*12, 0);
+        vector<int> arr(24*31*12*60, 0);
         function<int(int,int)> fn1 = [] (int a,int b) {
-            return a | b;
+            return a + b;
         };
         function<void(int&, int,int)> fn2 = [] (int& a,int b,int c) {
-            a = b;
+            a += b*c;
         };
         int neutralValue = 0;
         SegTree = new SegmentTree(arr,fn1,neutralValue,fn2);
         Trp = new Treap();
-        Trp->insert(0,24*31*12-1);
+        Trp->insert(0,24*31*12*60-1);
 
     }
     int book(string a,string b,int id = 1) {
@@ -384,7 +391,8 @@ class Room {
         y--;
         int occupied = SegTree->query(x,y);
 
-        if (occupied==id) {
+        if (occupied% (y-x+1)==0 && occupied/(y-x+1)==id) {
+            //id will be prime number so no hacking
             Trp->insert(x,y);
             SegTree->update(x,y,0);
             return 1;
@@ -414,13 +422,23 @@ class Room {
         y--;
         vector<vector<int>> answer;
         SegTree->fillChart(x,y,answer);
-        for (auto i:answer) {
-            cout << timeConverter->print(i[0]) << " to " << timeConverter->print(i[1]+1) << " by " << i[2] << endl;
+        if (answer.size()==0) return answer;
+        int start = answer[0][0], last = answer[0][1], id = answer[0][2];
+        for (int i=1;i<answer.size();i++) {
+            if (last+1 == answer[i][0] && id==answer[i][2]) {
+                last = answer[i][1];continue;
+            }
+            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << " by " << id<< endl;
+            start = answer[i][0];
+            last = answer[i][1];
+            id= answer[i][2];
         }
+            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << " by " << id<< endl;
+        
         return answer;
     }
     void save(string filename) {
-        int x = 0, y = 24*31*12;
+        int x = 0, y = 24*31*12*60;
         y--;
         vector<vector<int>> answer;
         SegTree->fillChart(x,y,answer);
@@ -450,15 +468,15 @@ class Room {
             iss>> cmd  ;
             if (cmd=="book") {
                 string a,b;
-                int id ;
-                iss>> a>> b >> id;
-                bool flag = this->book(a,b,id);
+                // int id ;
+                iss>> a>> b ;
+                bool flag = this->book(a,b);
                 cout << (flag==0? "not done" : "booking done successflly") << endl;
             }else if (cmd=="delete") {
                 string a,b;
-                int id ;
-                iss>> a>> b >> id;
-                bool flag = this->del(a,b,id);
+                // int id ;
+                iss>> a>> b ;
+                bool flag = this->del(a,b);
                 cout << (flag==0? "unable to delelte" : "deleting done successflly") << endl;
             } else if (cmd == "suggest") {
                 string a,b;
@@ -486,8 +504,8 @@ class Room {
 
 void run() {
     cout << "Welcome to My Project" << endl;
-    cout << "Commands: (book a b id) (delete a b id) (suggest a b) (show a b) (save filename) (load filename)" << endl;
-    cout << "used notation for a and b :: HHDDMM (all three are 0 based indexed)"  << endl;
+    cout << "Commands: (book a b) (delete a b) (suggest a b) (show a b) (save filename) (load filename)" << endl;
+    cout << "used notation for a and b :: HHMMDDMM (all three are 0 based indexed)"  << endl;
     cout << "used notation for filename: any valid name plus .txt" << endl;
     string line;
     Room* M1 = new Room();
@@ -500,15 +518,15 @@ void run() {
 
         if (cmd=="book") {
             string a,b;
-            int id ;
-            iss>> a>> b >> id;
-            bool flag = M1->book(a,b,id);
+            // int id ;
+            iss>> a>> b ;
+            bool flag = M1->book(a,b);
             cout << (flag==0? "not done" : "booking done successflly") << endl;
         }else if (cmd=="delete") {
             string a,b;
-            int id ;
-            iss>> a>> b >> id;
-            bool flag = M1->del(a,b,id);
+            // int id ;
+            iss>> a>> b ;
+            bool flag = M1->del(a,b);
             cout << (flag==0? "unable to delelte" : "deleting done successflly") << endl;
         } else if (cmd == "suggest") {
             string a,b;

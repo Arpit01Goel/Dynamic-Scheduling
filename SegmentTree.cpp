@@ -69,7 +69,7 @@ class SegmentTree {
                     applyLazy(lazy[2*idx+1], lazy[idx],1);
                 }
                 toProp[idx] = 0;
-                lazy[idx] = 0;
+                lazy[idx] = neutralValue;
         
         }
 
@@ -100,6 +100,10 @@ class SegmentTree {
             propagate(idx,start,end);
             if (tree[idx]==0) return;
             if (start==end) {output.push_back({start,end,tree[idx]}); return;}
+            if (tree[idx]%(end-start+1)==0) {
+                output.push_back({start,end,tree[idx]/(end-start+1)});
+                return;
+            }
             int mid = start + (end-start)/2;
             collector(2*idx,start,mid,l,r,output);
             collector(2*idx+1,mid+1,end,l,r,output);
