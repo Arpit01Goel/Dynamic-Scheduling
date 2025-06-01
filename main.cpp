@@ -60,6 +60,7 @@ class SegmentTree {
             }
         }
         void update(int idx, int start, int end, int pos, int val) {
+            
             propagate(idx,start,end);
             if (start==end) {
                 tree[idx] = val;
@@ -77,10 +78,10 @@ class SegmentTree {
             }
         }
         int query(int node, int start,int end, int l,int r){
-            if (n==0 || start>end || r<l) return 0;
+            if ( start>end || r<l) return neutralValue;
+            if (start>r || end<l ) return neutralValue;
             propagate(node,start,end);
             
-            if (start>r || end<l ) return neutralValue;
             if (l<=start && r>=end) {
                 return tree[node];
             }
@@ -95,7 +96,7 @@ class SegmentTree {
         
         void propagate(int idx, int start, int end) {
             if (toProp[idx]==0) return ;
-            
+                cout << "update " << idx << " to " << lazy[idx] << endl;
                 applyLazy(tree[idx], lazy[idx], end-start+1);
 
                 if (start!=end) {
@@ -110,11 +111,11 @@ class SegmentTree {
         }
 
         void rangeUpdate(int idx, int start,int end, int l,int r,int value) {
-            propagate(idx, start,end);
             if (start>r || end<l) {
                 //no overlap, exit
                 return;
             }
+            propagate(idx, start,end);
             if (l<=start && end<=r) {
 
                 //complete overlap
@@ -128,8 +129,8 @@ class SegmentTree {
             int mid = (start+end)/2;
             rangeUpdate(2*idx, start,mid,l,r,value);
             rangeUpdate(2*idx+1, mid+1, end, l, r, value);
-            applyLazy(tree[idx], tree[idx*2],tree[idx*2+1]);
-            // tree[idx] = operation(tree[idx*2],tree[idx*2+1]);
+            tree[idx] = operation( tree[idx*2],tree[idx*2+1]);
+            
         }
         void collector(int idx, int start,int end, int l,int r,vector<vector<int>> & output) {
             if (start>end || l>r || end<l || start>r) return;
@@ -420,12 +421,50 @@ class Room {
         }
         return answer;
     }
+    void save(string filename) {
+        int x = 0, y = 24*31*12;
+        y--;
+        vector<vector<int>> answer;
+        SegTree->fillChart(x,y,answer);
+        ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            cout << "Error: Unable to open file " << filename << endl;
+            return;
+        }
+        for (auto i:answer) {
+            cout << "book " << timeConverter->intToDTime(i[0])  << " " << timeConverter->intToDTime(i[1]+1) << " " << i[2] << endl;
+        }
+        outFile.close();
+        cout << "Data saved to : " << filename << endl;
+    }
+    void load(string filename) {
+        ifstream inFile(filename);
+        if (!inFile.is_open()) {
+            cout << "Error: Unable to open file " << filename << endl;
+            return;
+        }
+        string line;
+        while (getline(inFile,line)) {
+            istringstream iss(line);
+            string command, a, b;
+            int id;
+
+            iss>> command >> a >> b ;
+            if (command == "book") {
+                this->book(a,b,id);
+            }else {
+                cout << "wrong commands" << endl;
+                exit(0);
+            }
+        }
+    }
 };
 
 void run() {
     cout << "Welcome to My Project" << endl;
-    cout << "Commands: (book a b id) (delete a b id) (suggest a b) (show a b) " << endl;
+    cout << "Commands: (book a b id) (delete a b id) (suggest a b) (show a b) (save filename) (load filename)" << endl;
     cout << "used notation for a and b :: HHDDMM" << endl;
+    cout << "used notation for filename: any valid name plus .txt" << endl;
     string line;
     Room* M1 = new Room();
     while (true) {
@@ -455,7 +494,15 @@ void run() {
             string a,b;
             iss>> a >> b;
             M1->listBooking(a,b);
-        }else {
+        }else  if (cmd=="save") {
+            string a;
+            iss>> a;
+            M1->save(a);
+        } else if(cmd=="load") {
+            string b;
+            iss>> b;
+            M1->load(b);
+        } else {
             cout << "wrong command or wrong format! press ctrl+C to exit" << endl;
             exit(0);
         }
