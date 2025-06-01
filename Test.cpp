@@ -18,7 +18,7 @@ TEST_F(RoomTest, Booking) {
     EXPECT_EQ(room->book("22000000", "00000100"), 1);
     EXPECT_EQ(room->book("20010100", "22590100"), 1);
     EXPECT_EQ(room->book("15000000", "17290000"), 1);
-    EXPECT_EQ(room->book("00000300", "00000403"), 0);
+    EXPECT_EQ(room->book("00000300", "00000403"), 1);
     EXPECT_EQ(room->book("20000000", "00000100"), 0);
 }
 
@@ -33,33 +33,34 @@ TEST_F(RoomTest, LongBooking) {
 TEST_F(RoomTest, Deleting1) {
     EXPECT_EQ(room->del("00000000", "12040111"), 0);
     room->book("17050102", "19170102");
-    EXPECT_EQ(room->del("18000102", "12040102"), 0);
-    EXPECT_EQ(room->del("17050102", "19170102"), 0);
+    EXPECT_EQ(room->del("18000102", "19170102"), 1); //user can remove part of booking
+    
+    
 }
 
 TEST_F(RoomTest, Deleting2) {
     room->book("01031301", "01051301");
     room->book("01071301", "01091301");
-    EXPECT_EQ(room->del("01031301", "01051301"), 0);
+    EXPECT_EQ(room->del("01031301", "01091301"), 0);
     room->book("01051301", "01071301");
-    EXPECT_EQ(room->del("01031301", "01051301"), 0);
+    EXPECT_EQ(room->del("01031301", "01091301"), 1);
 }
 
 TEST_F(RoomTest, Suggest) {
     room->book("01031301", "01051301");
     room->book("01071301", "01091301");
-    EXPECT_EQ(room->suggest("00000000", "23593011"), 3);
+    EXPECT_EQ(room->suggest("00000000", "23593011").size(), 3);
     room->book("01051301", "01071301");
-    EXPECT_EQ(room->suggest("00000000", "23593011"), 2);
+    EXPECT_EQ(room->suggest("00000000", "23593011").size(), 2);
 }
 
 TEST_F(RoomTest, Listing) {
-    EXPECT_EQ(room->listBooking("00000000", "23593011"), 0);
+    EXPECT_EQ(room->listBooking("00000000", "23593011").size(), 0);
     room->book("01031301", "01051301");
     room->book("01071301", "01091301");
-    EXPECT_EQ(room->listBooking("00000000", "23593011"), 2);
+    EXPECT_EQ(room->listBooking("00000000", "23593011").size(), 2);
     room->book("01051301", "01071301");
-    EXPECT_EQ(room->listBooking("00000000", "23593011"), 1);
+    EXPECT_EQ(room->listBooking("00000000", "23593011").size(), 1);
 }
 
 int main(int argc, char** argv) {

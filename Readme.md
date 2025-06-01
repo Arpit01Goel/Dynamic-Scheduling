@@ -84,3 +84,12 @@ The time format used in this project is `HHMMDDMM`:
    ```
    > load output.txt
    ```
+
+6. **Run Tests**:
+   To use unit testing, you need to install Google Test (gtest) on your system.
+   To run the unit tests provided in `Test.cpp`, use the following commands:
+   ```bash
+   g++ -std=c++17 -pthread Test.cpp -lgtest -o tests
+   ./tests
+   ```
+   This will compile and execute the tests to verify the functionality of the program.
