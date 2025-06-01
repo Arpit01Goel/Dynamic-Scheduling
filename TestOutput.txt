@@ -1,0 +1,30 @@
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from RoomTest
+[ RUN      ] RoomTest.Booking
+[       OK ] RoomTest.Booking (36 ms)
+[ RUN      ] RoomTest.ShortBooking
+[       OK ] RoomTest.ShortBooking (34 ms)
+[ RUN      ] RoomTest.LongBooking
+[       OK ] RoomTest.LongBooking (34 ms)
+[ RUN      ] RoomTest.Deleting1
+[       OK ] RoomTest.Deleting1 (34 ms)
+[ RUN      ] RoomTest.Deleting2
+[       OK ] RoomTest.Deleting2 (34 ms)
+[ RUN      ] RoomTest.Suggest
+00:00  00/00 to 01:03  13/01
+01:05  13/01 to 01:07  13/01
+01:09  13/01 to 00:00  00/12
+00:00  00/00 to 01:03  13/01
+01:09  13/01 to 00:00  00/12
+[       OK ] RoomTest.Suggest (35 ms)
+[ RUN      ] RoomTest.Listing
+01:03  13/01 to 01:05  13/01
+01:07  13/01 to 01:09  13/01
+01:03  13/01 to 01:09  13/01
+[       OK ] RoomTest.Listing (34 ms)
+[----------] 7 tests from RoomTest (248 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (248 ms total)
+[  PASSED  ] 7 tests.
