@@ -4,8 +4,8 @@ Dynamic Interval Scheduling is a project designed to manage and schedule interva
 
 ## Features
 
-- **Book Intervals**: Reserve intervals for specific IDs.
-- **Delete Intervals**: Remove reservations based on interval and ID.
+- **Book Intervals**: Reserve intervals.
+- **Delete Intervals**: Remove reservations based on interval .
 - **Suggest Intervals**: Suggest available intervals within a given range.
 - **List Bookings**: Display all bookings within a specified range.
 - **Save and Load**: Save interval data to a file and load it back.
@@ -14,20 +14,20 @@ Dynamic Interval Scheduling is a project designed to manage and schedule interva
 
 The project supports the following commands:
 
-1. **Book**: `book <start_time> <end_time> <id>`
-   - Example: `book 170000 190000 3`
+1. **Book**: `book <start_time> <end_time> `
+   - Example: `book 17000000 19000000`
    - Reserves the interval `[start_time, end_time)` for the given ID.
 
-2. **Delete**: `delete <start_time> <end_time> <id>`
-   - Example: `delete 170000 190000 3`
+2. **Delete**: `delete <start_time> <end_time>`
+   - Example: `delete 17000000 19000000`
    - Removes the reservation for the specified interval and ID.
 
 3. **Suggest**: `suggest <start_time> <end_time>`
-   - Example: `suggest 000000 233011`
+   - Example: `suggest 00000000 23593011`
    - Suggests available intervals within the given range.
 
 4. **Show**: `show <start_time> <end_time>`
-   - Example: `show 000000 233011`
+   - Example: `show 00000000 23593011`
    - Lists all bookings within the specified range.
 
 5. **Save**: `save <filename>`
@@ -41,8 +41,9 @@ The project supports the following commands:
 
 ## Time Format
 
-The time format used in this project is `HHDDMM`:
+The time format used in this project is `HHMMDDMM`:
 - `HH`: Hours (0-based index)
+- `MM`: Minutes(0-based index)
 - `DD`: Days (0-based index)
 - `MM`: Months (0-based index)
 
@@ -68,9 +69,9 @@ The time format used in this project is `HHDDMM`:
 3. **Use the Command-Line Interface**:
    After running the program, a command-line interface will appear. You can input commands one by one to interact with the program. For example:
    ```
-   > book 170000 190000 3
-   > delete 170000 180000 3
-   > suggest 000000 233011
+   > book 17000000 19000000
+   > delete 17000000 18000000
+   > suggest 00000000 23593011
    ```
 4. **View Output**:
    The program will process each command and display the results in the terminal. If you use the `save` command, the current schedule will be saved to the specified file.
