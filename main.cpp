@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+
+
 using namespace std;
 
 typedef long long ll;
@@ -6,6 +8,7 @@ typedef long long ll;
 class TimeFormat {
     public:
         string intToDTime(int num) {
+            // num+=24*31 + 12;
             int hours = num%24;
             num/=24;
             int days = num%31;
@@ -19,7 +22,9 @@ class TimeFormat {
         } 
         int DTimeToInt(const string nwtime) {
             string time = nwtime.substr(4,2) + nwtime.substr(2,2)+ nwtime.substr(0,2);
-            int answer = 24*31*stoi(time.substr(0,2)) + 24*stoi(time.substr(2,2)) + stoi(time.substr(4,2));
+            int answer =  24*31*stoi(time.substr(0,2)) 
+                         +24*   stoi(time.substr(2,2)) 
+                         +     stoi(time.substr(4,2));
             return answer;
         }
         void print(string str) {
@@ -126,10 +131,11 @@ class SegmentTree {
             applyLazy(tree[idx], tree[idx*2],tree[idx*2+1]);
             // tree[idx] = operation(tree[idx*2],tree[idx*2+1]);
         }
-        void collector(int idx, int start,int end, int l,int r,vector<tuple<int,int,int>> & output) {
+        void collector(int idx, int start,int end, int l,int r,vector<vector<int>> & output) {
             if (start>end || l>r || end<l || start>r) return;
             propagate(idx,start,end);
-            if (start==end) output.push_back({start,end,tree[idx]});
+            if (tree[idx]==0) return;
+            if (start==end) {output.push_back({start,end,tree[idx]}); return;}
             int mid = start + (end-start)/2;
             collector(2*idx,start,mid,l,r,output);
             collector(2*idx+1,mid+1,end,l,r,output);
@@ -159,7 +165,7 @@ class SegmentTree {
         int query(int l,int r){
             return query(1,0,n-1,l,r);
         }
-        void fillChart(int l,int r,vector<tuple<int,int,int>> & output) {
+        void fillChart(int l,int r,vector<vector<int>> & output) {
             output.clear();
             collector(1,0,n-1,l,r,output);
         }
@@ -347,7 +353,7 @@ class Room {
         timeConverter = new TimeFormat();
         vector<int> arr(24*31*12, 0);
         function<int(int,int)> fn1 = [] (int a,int b) {
-            return a|b;
+            return a | b;
         };
         function<void(int&, int,int)> fn2 = [] (int& a,int b,int c) {
             a = b;
@@ -398,26 +404,68 @@ class Room {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
         y--;
         vector<pair<int,int>> vec = Trp->getFreeIntervals(x,y);
+        for (auto i:vec) {
+            cout << timeConverter->intToDTime(i.first) << " to " << timeConverter->intToDTime(i.second+1) << endl;
+        }
         return vec;
         
     }    
-    vector<tuple<int,int,int>> listBooking(string a, string b) {
+    vector<vector<int>> listBooking(string a, string b) {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
         y--;
-        vector<tuple<int,int,int>> answer;
+        vector<vector<int>> answer;
         SegTree->fillChart(x,y,answer);
+        for (auto i:answer) {
+            cout << timeConverter->intToDTime(i[0]) << " to " << timeConverter->intToDTime(i[1]+1) << " by " << i[2] << endl;
+        }
         return answer;
     }
 };
 
+void run() {
+    cout << "Welcome to My Project" << endl;
+    cout << "Commands: (book a b id) (delete a b id) (suggest a b) (show a b) " << endl;
+    cout << "used notation for a and b :: HHDDMM" << endl;
+    string line;
+    Room* M1 = new Room();
+    while (true) {
+        cout << "> " ;
+        getline(cin,line);
+        istringstream iss(line);
+        string cmd;
+        iss>> cmd;
+
+        if (cmd=="book") {
+            string a,b;
+            int id ;
+            iss>> a>> b >> id;
+            bool flag = M1->book(a,b,id);
+            cout << (flag==0? "not done" : "booking done successflly") << endl;
+        }else if (cmd=="delete") {
+            string a,b;
+            int id ;
+            iss>> a>> b >> id;
+            bool flag = M1->del(a,b,id);
+            cout << (flag==0? "unable to delelte" : "deleting done successflly") << endl;
+        } else if (cmd == "suggest") {
+            string a,b;
+            iss>> a >> b;
+            M1->suggest(a,b);
+        } else if (cmd=="show") {
+            string a,b;
+            iss>> a >> b;
+            M1->listBooking(a,b);
+        }else {
+            cout << "wrong command or wrong format! press ctrl+C to exit" << endl;
+            exit(0);
+        }
+
+    }
+
+}
+
+
 int main() {
-    Room *M1 = new Room();
-
-    M1->book("000000","000100",5);
-    M1->del("000000","040000",5);
-    M1->del("040000" , "070000",5);
-    M1->suggest("000000","000100");
-    
-
+    run();
     return 0;
 }
