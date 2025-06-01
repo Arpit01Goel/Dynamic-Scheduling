@@ -73,7 +73,7 @@ The time format used in this project is `HHMMDDMM`:
    > delete 17000000 18000000
    > suggest 00000000 23593011
    ```
-4. **View Output**:
+4. **Save Current Data**:
    The program will process each command and display the results in the terminal. If you use the `save` command, the current schedule will be saved to the specified file.
    ```
    > save output.txt
