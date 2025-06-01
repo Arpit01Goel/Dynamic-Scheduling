@@ -21,8 +21,8 @@ class SegmentTree {
                 int mid = start + (end-start)/2;
                 build(arr,2*idx, start, mid);
                 build (arr, 2*idx+1, mid+1, end);
-                //# the property of segment Tree is here 
-                tree[idx] = operation(tree[2*idx],tree[2*idx+1]);    //addition
+                
+                tree[idx] = operation(tree[2*idx],tree[2*idx+1]);    
             }
         }
         void update(int idx, int start, int end, int pos, int val) {
@@ -37,31 +37,29 @@ class SegmentTree {
                 } else {
                     update(2 * idx + 1, mid + 1, end, pos, val);
                 }
-                //# the property of segment Tree is here 
-                tree[idx] = operation(tree[2*idx], tree[2*idx+1]);    //addition
+                
+                tree[idx] = operation(tree[2*idx], tree[2*idx+1]);   
 
             }
         }
         int query(int node, int start,int end, int l,int r){
-            if (n==0 || start>end || r<l) return 0;
+            if ( start>end || r<l) return neutralValue;
+            if (start>r || end<l ) return neutralValue;
             propagate(node,start,end);
             
-            if (start>r || end<l ) return neutralValue;
             if (l<=start && r>=end) {
                 return tree[node];
             }
             int mid = start + (end-start)/2;
             int p = query(2*node, start, mid, l, r);
             int q = query(2*node+1, mid+1, end, l, r);
-            //# the property of segment Tree is here 
-            
+                        
             return operation(p,q);
         }
         
         
         void propagate(int idx, int start, int end) {
-            if (toProp[idx]==0) return ;
-            
+            if (toProp[idx]==0) return ; 
                 applyLazy(tree[idx], lazy[idx], end-start+1);
 
                 if (start!=end) {
@@ -76,11 +74,11 @@ class SegmentTree {
         }
 
         void rangeUpdate(int idx, int start,int end, int l,int r,int value) {
-            propagate(idx, start,end);
             if (start>r || end<l) {
                 //no overlap, exit
                 return;
             }
+            propagate(idx, start,end);
             if (l<=start && end<=r) {
 
                 //complete overlap
@@ -94,8 +92,17 @@ class SegmentTree {
             int mid = (start+end)/2;
             rangeUpdate(2*idx, start,mid,l,r,value);
             rangeUpdate(2*idx+1, mid+1, end, l, r, value);
-            applyLazy(tree[idx], tree[idx*2],tree[idx*2+1]);
-            // tree[idx] = operation(tree[idx*2],tree[idx*2+1]);
+            tree[idx] = operation( tree[idx*2],tree[idx*2+1]);
+            
+        }
+        void collector(int idx, int start,int end, int l,int r,vector<vector<int>> & output) {
+            if (start>end || l>r || end<l || start>r) return;
+            propagate(idx,start,end);
+            if (tree[idx]==0) return;
+            if (start==end) {output.push_back({start,end,tree[idx]}); return;}
+            int mid = start + (end-start)/2;
+            collector(2*idx,start,mid,l,r,output);
+            collector(2*idx+1,mid+1,end,l,r,output);
         }
 
     public:
@@ -121,6 +128,10 @@ class SegmentTree {
         }
         int query(int l,int r){
             return query(1,0,n-1,l,r);
+        }
+        void fillChart(int l,int r,vector<vector<int>> & output) {
+            output.clear();
+            collector(1,0,n-1,l,r,output);
         }
 
 };

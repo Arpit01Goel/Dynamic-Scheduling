@@ -70,7 +70,7 @@ class Treap {
             if (b<node->a) return search(node->right, a,b);
             if (a>node->b) return search(node->left, a,b);
             if (a>=node->a && b<=node->b) return node;
-            cout << "see me" << endl;
+            
             return nullptr;
         }
         Node* searchRight(Node* node,int b) {
@@ -94,7 +94,7 @@ class Treap {
             if (node->a <= a && node->b >=b) return node;
             if (node->a > b) return searchBetween(node->left,a,b);
             if (node->b<a) return searchBetween(node->right,a,b);
-            cout << "problem" << endl;
+            
             return nullptr;
         }
         void getOverlap(Node* node, int a,int b,vector<pair<int,int>> & output) {
@@ -158,8 +158,6 @@ class Treap {
                     }
                     
                 }
-            }else {
-                cout << "wrong qeury" << endl;
             }
         }
         vector<pair<int,int>> getFreeIntervals(int a,int b) {

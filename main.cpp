@@ -1,6 +1,4 @@
 #include <bits/stdc++.h>
-
-
 using namespace std;
 
 typedef long long ll;
@@ -57,8 +55,8 @@ class SegmentTree {
                 int mid = start + (end-start)/2;
                 build(arr,2*idx, start, mid);
                 build (arr, 2*idx+1, mid+1, end);
-                //# the property of segment Tree is here 
-                tree[idx] = operation(tree[2*idx],tree[2*idx+1]);    //addition
+                
+                tree[idx] = operation(tree[2*idx],tree[2*idx+1]);    
             }
         }
         void update(int idx, int start, int end, int pos, int val) {
@@ -74,8 +72,8 @@ class SegmentTree {
                 } else {
                     update(2 * idx + 1, mid + 1, end, pos, val);
                 }
-                //# the property of segment Tree is here 
-                tree[idx] = operation(tree[2*idx], tree[2*idx+1]);    //addition
+                
+                tree[idx] = operation(tree[2*idx], tree[2*idx+1]);   
 
             }
         }
@@ -90,7 +88,7 @@ class SegmentTree {
             int mid = start + (end-start)/2;
             int p = query(2*node, start, mid, l, r);
             int q = query(2*node+1, mid+1, end, l, r);
-            //# the property of segment Tree is here 
+            
             
             return operation(p,q);
         }
