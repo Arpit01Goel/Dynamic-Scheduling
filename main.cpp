@@ -8,7 +8,7 @@ typedef long long ll;
 class TimeFormat {
     public:
         string intToDTime(int num) {
-            // num+=24*31 + 12;
+            
             int hours = num%24;
             num/=24;
             int days = num%31;
@@ -27,11 +27,13 @@ class TimeFormat {
                          +     stoi(time.substr(4,2));
             return answer;
         }
-        void print(string str) {
-            cout << str.substr(0,2) + ":00 " + str.substr(2,2) + "/" + str.substr(4,2)<< endl;
+        string print(string str) {
+            cout << str.substr(0,2) + ":00 " + str.substr(2,2) + "/" + str.substr(4,2);
+            return "";
         }
-        void print(int num) {
+        string print(int num) {
             this->print(intToDTime(num));
+            return "";
         }
 };
 
@@ -96,7 +98,7 @@ class SegmentTree {
         
         void propagate(int idx, int start, int end) {
             if (toProp[idx]==0) return ;
-                cout << "update " << idx << " to " << lazy[idx] << endl;
+                
                 applyLazy(tree[idx], lazy[idx], end-start+1);
 
                 if (start!=end) {
@@ -242,7 +244,7 @@ class Treap {
             if (b<node->a) return search(node->right, a,b);
             if (a>node->b) return search(node->left, a,b);
             if (a>=node->a && b<=node->b) return node;
-            cout << "see me" << endl;
+            
             return nullptr;
         }
         Node* searchRight(Node* node,int b) {
@@ -266,7 +268,7 @@ class Treap {
             if (node->a <= a && node->b >=b) return node;
             if (node->a > b) return searchBetween(node->left,a,b);
             if (node->b<a) return searchBetween(node->right,a,b);
-            cout << "problem" << endl;
+            
             return nullptr;
         }
         void getOverlap(Node* node, int a,int b,vector<pair<int,int>> & output) {
@@ -330,8 +332,6 @@ class Treap {
                     }
                     
                 }
-            }else {
-                cout << "wrong qeury" << endl;
             }
         }
         vector<pair<int,int>> getFreeIntervals(int a,int b) {
@@ -372,7 +372,7 @@ class Room {
         int occupied = SegTree->query(x,y);
         
         if (occupied) {
-            cout << "slot is already occupied" << endl;
+            
             return 0;
         }else {
             SegTree->update(x,y,id);
@@ -391,7 +391,7 @@ class Room {
             SegTree->update(x,y,0);
             return 1;
         }else {
-            cout << "it was empty or you do not have permission" << endl;
+            
             return 0;
         }
         
@@ -406,7 +406,7 @@ class Room {
         y--;
         vector<pair<int,int>> vec = Trp->getFreeIntervals(x,y);
         for (auto i:vec) {
-            cout << timeConverter->intToDTime(i.first) << " to " << timeConverter->intToDTime(i.second+1) << endl;
+            cout << timeConverter->print(i.first) << " to " << timeConverter->print(i.second+1) << endl;
         }
         return vec;
         
@@ -417,7 +417,7 @@ class Room {
         vector<vector<int>> answer;
         SegTree->fillChart(x,y,answer);
         for (auto i:answer) {
-            cout << timeConverter->intToDTime(i[0]) << " to " << timeConverter->intToDTime(i[1]+1) << " by " << i[2] << endl;
+            cout << timeConverter->print(i[0]) << " to " << timeConverter->print(i[1]+1) << " by " << i[2] << endl;
         }
         return answer;
     }
@@ -432,7 +432,7 @@ class Room {
             return;
         }
         for (auto i:answer) {
-            cout << "book " << timeConverter->intToDTime(i[0])  << " " << timeConverter->intToDTime(i[1]+1) << " " << i[2] << endl;
+            outFile << "book " << timeConverter->intToDTime(i[0])  << " " << timeConverter->intToDTime(i[1]+1) << " " << i[2] << endl;
         }
         outFile.close();
         cout << "Data saved to : " << filename << endl;
@@ -446,14 +446,40 @@ class Room {
         string line;
         while (getline(inFile,line)) {
             istringstream iss(line);
-            string command, a, b;
-            int id;
+            string cmd;
+            
 
-            iss>> command >> a >> b ;
-            if (command == "book") {
-                this->book(a,b,id);
-            }else {
-                cout << "wrong commands" << endl;
+            iss>> cmd  ;
+            if (cmd=="book") {
+                string a,b;
+                int id ;
+                iss>> a>> b >> id;
+                bool flag = this->book(a,b,id);
+                cout << (flag==0? "not done" : "booking done successflly") << endl;
+            }else if (cmd=="delete") {
+                string a,b;
+                int id ;
+                iss>> a>> b >> id;
+                bool flag = this->del(a,b,id);
+                cout << (flag==0? "unable to delelte" : "deleting done successflly") << endl;
+            } else if (cmd == "suggest") {
+                string a,b;
+                iss>> a >> b;
+                this->suggest(a,b);
+            } else if (cmd=="show") {
+                string a,b;
+                iss>> a >> b;
+                this->listBooking(a,b);
+            }else  if (cmd=="save") {
+                string a;
+                iss>> a;
+                this->save(a);
+            } else if(cmd=="load") {
+                string b;
+                iss>> b;
+                this->load(b);
+            } else {
+                cout << "wrong command or wrong format! press ctrl+C to exit" << endl;
                 exit(0);
             }
         }
@@ -463,7 +489,7 @@ class Room {
 void run() {
     cout << "Welcome to My Project" << endl;
     cout << "Commands: (book a b id) (delete a b id) (suggest a b) (show a b) (save filename) (load filename)" << endl;
-    cout << "used notation for a and b :: HHDDMM" << endl;
+    cout << "used notation for a and b :: HHDDMM (all three are 0 based indexed)"  << endl;
     cout << "used notation for filename: any valid name plus .txt" << endl;
     string line;
     Room* M1 = new Room();
