@@ -177,6 +177,11 @@ class SegmentTree {
             output.clear();
             collector(1,0,n-1,l,r,output);
         }
+        ~ SegmentTree() {
+            this->lazy.clear();
+            this->tree.clear();
+            this->toProp.clear();
+        }
 
 };
 
@@ -191,6 +196,10 @@ class Node {
             this->left = nullptr;
             this->right = nullptr;
             this->priority = rand();
+        }
+        ~Node() {
+            this->left = nullptr;
+            this->right = nullptr;
         }
 };
 
@@ -284,12 +293,21 @@ class Treap {
             output.push_back({node->a,node->b});
             getOverlap(node->right, a,b,output);
         }
+        void clear(Node* node) {
+            if (node==nullptr) return;
+            clear(node->left);
+            clear(node->right);
+            delete node;
+        }
     public:
         Treap(): root(nullptr) {}
         void suggestLeft(int a) {
             Node* temp = searchLeft(this->root,a);
             
             cout << temp->a << " " << temp->b << endl;
+        }
+        ~Treap() {
+            clear(this->root);
         }
         void suggestRight(int b) {
             Node* temp = searchRight(this->root, b) ;
@@ -370,6 +388,10 @@ class Room {
         Trp->insert(0,24*31*12*60-1);
 
     }
+    ~Room() {
+        delete SegTree;
+        delete Trp;
+    }
     int book(string a,string b,int id = 1) {
         
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
@@ -420,21 +442,22 @@ class Room {
     vector<vector<int>> listBooking(string a, string b) {
         int x = timeConverter->DTimeToInt(a), y = timeConverter->DTimeToInt(b);
         y--;
-        vector<vector<int>> answer;
-        SegTree->fillChart(x,y,answer);
-        if (answer.size()==0) return answer;
-        int start = answer[0][0], last = answer[0][1], id = answer[0][2];
-        for (int i=1;i<answer.size();i++) {
-            if (last+1 == answer[i][0] && id==answer[i][2]) {
-                last = answer[i][1];continue;
+        vector<vector<int>> output, answer;
+        SegTree->fillChart(x,y,output);
+        if (output.size()==0) return output;
+        int start = output[0][0], last = output[0][1], id = output[0][2];
+        for (int i=1;i<output.size();i++) {
+            if (last+1 == output[i][0] && id==output[i][2]) {
+                last = output[i][1];continue;
             }
-            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << " by " << id<< endl;
-            start = answer[i][0];
-            last = answer[i][1];
-            id= answer[i][2];
+            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << endl;
+            answer.push_back({start,last});
+            start = output[i][0];
+            last = output[i][1];
+            id= output[i][2];
         }
-            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << " by " << id<< endl;
-        
+            cout << timeConverter->print(start) << " to " << timeConverter->print(last+1) << endl;
+            answer.push_back({start,last});
         return answer;
     }
     void save(string filename) {
@@ -554,7 +577,3 @@ void run() {
 }
 
 
-int main() {
-    run();
-    return 0;
-}
